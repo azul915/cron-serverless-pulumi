@@ -1,0 +1,3 @@
+name: cron-serverless-pulumi
+runtime: go
+description: Go Pulumi(CloudWatch, Lambda)
