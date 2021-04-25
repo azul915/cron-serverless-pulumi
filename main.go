@@ -41,6 +41,23 @@ func launch(ctx *pulumi.Context) error {
 		return err
 	}
 
+	// policy, err := iam.NewPolicy(ctx, "lambda-policy", &iam.PolicyArgs{
+	// 	Policy: pulumi.String(`{
+	// 				"Version": "2012-10-17",
+	// 				"Statement": [
+	// 					{
+	// 						"Effect": "Allow",
+	// 						"Action": [
+	// 							"logs:CreateLogGroup",
+	// 							"logs:CreateLogStream",
+	// 							"logs:PutLogEvents"
+	// 						],
+	// 						"Resource": "*"
+	// 					}
+	// 				]
+	// 	}`),
+	// })
+
 	// Create an Lambda Function
 	lambdaFunction, err := lambda.NewFunction(ctx, "lambda-function", &lambda.FunctionArgs{
 		Description: pulumi.String("lambda function desicription"),
@@ -61,6 +78,7 @@ func launch(ctx *pulumi.Context) error {
 
 	// Create an CloudWatch Events
 	eventRule, err := cloudwatch.NewEventRule(ctx, "rule", &cloudwatch.EventRuleArgs{
+		Name:               pulumi.Sprintf("%s-kick-rule", lambdaFunction.Name),
 		Description:        pulumi.String("cloudwatchevents role description"),
 		ScheduleExpression: pulumi.String("cron(00 8,20 * * ? *)"),
 	})
@@ -81,6 +99,13 @@ func launch(ctx *pulumi.Context) error {
 	_, err = cloudwatch.NewEventTarget(ctx, "lambda", &cloudwatch.EventTargetArgs{
 		Rule: eventRule.Name,
 		Arn:  lambdaFunction.Arn,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = cloudwatch.NewLogGroup(ctx, "lgtm-log", &cloudwatch.LogGroupArgs{
+		Name: pulumi.Sprintf("/aws/lambda/%s", lambdaFunction.Name),
 	})
 	if err != nil {
 		return err
