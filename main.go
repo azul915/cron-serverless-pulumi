@@ -41,22 +41,34 @@ func launch(ctx *pulumi.Context) error {
 		return err
 	}
 
-	// policy, err := iam.NewPolicy(ctx, "lambda-policy", &iam.PolicyArgs{
-	// 	Policy: pulumi.String(`{
-	// 				"Version": "2012-10-17",
-	// 				"Statement": [
-	// 					{
-	// 						"Effect": "Allow",
-	// 						"Action": [
-	// 							"logs:CreateLogGroup",
-	// 							"logs:CreateLogStream",
-	// 							"logs:PutLogEvents"
-	// 						],
-	// 						"Resource": "*"
-	// 					}
-	// 				]
-	// 	}`),
-	// })
+	lambdaPolicy, err := iam.NewPolicy(ctx, "policy", &iam.PolicyArgs{
+		Policy: pulumi.String(`{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Action": [
+						"logs:CreateLogStream",
+						"logs:CreateLogGroup",
+						"logs:PutLogEvents"
+					],
+					"Effect": "Allow",
+					"Resource": "*",
+					"Sid": ""
+				}
+			]
+		}`),
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = iam.NewRolePolicyAttachment(ctx, "attachment", &iam.RolePolicyAttachmentArgs{
+		Role:      lambdaRole.Name,
+		PolicyArn: lambdaPolicy.Arn,
+	})
+	if err != nil {
+		return err
+	}
 
 	// Create an Lambda Function
 	lambdaFunction, err := lambda.NewFunction(ctx, "lambda-function", &lambda.FunctionArgs{
