@@ -73,9 +73,9 @@ func launch(ctx *pulumi.Context) error {
 	// Create an Lambda Function
 	lambdaFunction, err := lambda.NewFunction(ctx, "lambda-function", &lambda.FunctionArgs{
 		Description: pulumi.String("lambda function desicription"),
-		Runtime:     pulumi.String("go1.x"),
+		Runtime:     pulumi.String("python3.8"),
 		Name:        pulumi.String("lambda-function-name"),
-		Handler:     pulumi.String("entrypoint"),
+		Handler:     pulumi.String("sample.lambda_handler"),
 		Code:        pulumi.NewFileArchive("./sample.zip"),
 		Role:        lambdaRole.Arn,
 		Environment: &lambda.FunctionEnvironmentArgs{
